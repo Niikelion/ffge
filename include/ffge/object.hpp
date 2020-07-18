@@ -18,7 +18,10 @@ namespace ffge
         mutable glm::mat4 transforms_;
         std::weak_ptr<Transform> parent_;
         std::vector<std::shared_ptr<Transform>> children;
+        Object* object;
     public:
+        Object& getObject();
+        bool hasObject() const noexcept;
         std::weak_ptr<Transform> getParent() const;
         void setParent(const std::shared_ptr<Transform>& parent);
 
@@ -40,7 +43,7 @@ namespace ffge
         void scaleRelativeTo(const glm::vec3& p,const glm::vec3& s);
         void rotateAround(const glm::vec3& p,const glm::quat& r);
 
-        Transform() : position_() ,scale_(1) ,rotation_() ,dispersed_(false) ,transforms_(1), parent_() {}
+        Transform() : position_() ,scale_(1) ,rotation_() ,dispersed_(false) ,transforms_(1), parent_(), object(nullptr) {}
         Transform(const Transform&) = default;
         Transform(Transform&&) noexcept = default;
     };
@@ -55,66 +58,6 @@ namespace ffge
 
         std::shared_ptr<Drawable> drawable;
     };
-    /*class Object: public Drawable
-    {
-    protected:
-        mutable bool __flag;
-    public:
-        Drawable* model;
-        glm::mat4 transforms;
-
-        virtual void draw(const glm::mat4& m, const glm::mat4& v, const glm::mat4& p) const override;
-
-        virtual void unlock() noexcept;
-
-        Object();
-        Object(const Object&) = default;
-        Object(Object&&) noexcept = default;
-        virtual ~Object() = default;
-    };
-
-    class ObjectGroup: public Drawable
-    {
-    public:
-        typedef std::vector<std::pair<std::shared_ptr<Drawable>,glm::mat4> > container_type;
-
-        virtual void draw(const glm::mat4& m,const glm::mat4& v, const glm::mat4& p) const override;
-
-        typedef container_type::iterator iterator;
-        typedef container_type::const_iterator const_iterator;
-        typedef container_type::reverse_iterator reverse_iterator;
-        typedef container_type::const_reverse_iterator const_reverse_iterator;
-
-        container_type& container() noexcept;
-
-        void add(const std::shared_ptr<Drawable> & target,const glm::mat4& = glm::mat4(1));
-        void add(Drawable & target,const glm::mat4& = glm::mat4(1));
-        void add(Drawable * target,const glm::mat4& = glm::mat4(1));
-
-        iterator begin() const noexcept;
-        iterator end() const noexcept;
-
-        const_iterator cbegin() const noexcept;
-        const_iterator cend() const noexcept;
-
-        reverse_iterator rbegin() const noexcept;
-        reverse_iterator rend() const noexcept;
-
-        const_reverse_iterator crbegin() const noexcept;
-        const_reverse_iterator crend() const noexcept;
-
-        container_type::value_type & operator [] (size_t off);
-        iterator find(const Drawable& target);
-        reverse_iterator rfind(const Drawable& target);
-
-        ObjectGroup() = default;
-        ObjectGroup(const ObjectGroup&) = default;
-        ObjectGroup(ObjectGroup&&) noexcept = default;
-        virtual ~ObjectGroup() = default;
-    protected:
-        container_type objects;
-        mutable bool __flag;
-    };*/
 }
 
 #endif // OBJECT_H

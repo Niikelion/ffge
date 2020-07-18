@@ -1,8 +1,19 @@
 #include "object.hpp"
 #include <glm/gtc/matrix_transform.hpp>
+#include <stdexcept>
 
 namespace ffge
 {
+    Object& Transform::getObject()
+    {
+        if (object == nullptr)
+            throw std::logic_error("object does not exist");
+        return *object;
+    }
+    bool Transform::hasObject() const noexcept
+    {
+        return object!=nullptr;
+    }
     std::weak_ptr<Transform> Transform::getParent() const
     {
         return parent_;
@@ -93,120 +104,8 @@ namespace ffge
     }
 
 
-    /*void Object::draw(const glm::mat4& m, const glm::mat4& v, const glm::mat4& p) const
+    std::weak_ptr<Object> Object::getParent() const
     {
-        if (!__flag && model != nullptr)
-        {
-            __flag = true;
-            model -> draw(m*transforms,v,p);
-            __flag = false;
-        }
+        return std::weak_ptr<Object>();
     }
-
-    void Object::unlock() noexcept
-    {
-        __flag = false;
-    }
-
-    Object::Object()
-    {
-        model = nullptr;
-        transforms = glm::mat4(1);
-        __flag = false;
-    }
-
-    void ObjectGroup::draw(const glm::mat4& m, const glm::mat4& v, const glm::mat4& p) const
-    {
-        if (!__flag)
-        {
-            __flag = true;
-            for (const auto &i:objects)
-                i.first.get()->draw(m*i.second,v,p);
-            __flag = false;
-        }
-    }
-
-    void ObjectGroup::add(const std::shared_ptr<Drawable> & target,const glm::mat4& t)
-    {
-        objects.emplace_back(target,t);
-    }
-
-    void ObjectGroup::add(Drawable & target,const glm::mat4& t)
-    {
-        objects.emplace_back(std::shared_ptr<Drawable>(const_cast<Drawable*>(&target),[](Drawable*){}),t);
-    }
-
-    void ObjectGroup::add(Drawable * target,const glm::mat4& t)
-    {
-        objects.emplace_back(std::shared_ptr<Drawable>(const_cast<Drawable*>(target)),t);
-    }
-
-    ObjectGroup::iterator ObjectGroup::begin() const noexcept
-    {
-        return const_cast<ObjectGroup*>(this)->objects.begin();
-    }
-
-    ObjectGroup::iterator ObjectGroup::end() const noexcept
-    {
-        return const_cast<ObjectGroup*>(this)->objects.end();
-    }
-
-    ObjectGroup::const_iterator ObjectGroup::cbegin() const noexcept
-    {
-        return objects.cbegin();
-    }
-
-    ObjectGroup::const_iterator ObjectGroup::cend() const noexcept
-    {
-        return objects.cend();
-    }
-
-    ObjectGroup::reverse_iterator ObjectGroup::rbegin() const noexcept
-    {
-        return const_cast<ObjectGroup*>(this)->objects.rbegin();
-    }
-
-    ObjectGroup::reverse_iterator ObjectGroup::rend() const noexcept
-    {
-        return const_cast<ObjectGroup*>(this)->objects.rend();
-    }
-
-    ObjectGroup::const_reverse_iterator ObjectGroup::crbegin() const noexcept
-    {
-        return objects.crbegin();
-    }
-
-    ObjectGroup::const_reverse_iterator ObjectGroup::crend() const noexcept
-    {
-        return objects.crend();
-    }
-
-    ObjectGroup::container_type::value_type& ObjectGroup::operator[](size_t off)
-    {
-        return objects[off];
-    }
-
-    ObjectGroup::iterator ObjectGroup::find(const Drawable& target)
-    {
-        return std::find_if(
-                            begin(),
-                            end(),
-                            [&target](const container_type::value_type& a)
-                            {
-                                return a.first.get() == &target;
-                            }
-                            );
-    }
-
-    ObjectGroup::reverse_iterator ObjectGroup::rfind(const Drawable& target)
-    {
-        return std::find_if(
-                            rbegin(),
-                            rend(),
-                            [&target](const container_type::value_type& a)
-                            {
-                                return a.first.get() == &target;
-                            }
-                            );
-    }*/
 }
