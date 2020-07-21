@@ -48,6 +48,39 @@ set(HEADERS
 )
 
 add_library(ffge ${SOURCES} ${HEADERS})
-target_include_directories(ffge PUBLIC ./include)
+target_include_directories(ffge PUBLIC 
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>  
+    	$<INSTALL_INTERFACE:./include>)
 target_include_directories(ffge PRIVATE include/ffge)
 target_link_libraries(ffge PUBLIC FreeImage glm GLEW freetype)
+
+add_library(ffge::ffge ALIAS ffge)
+
+install(TARGETS ffge
+        EXPORT ffgeTargets
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin
+        )
+
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+    ffgeConfigVersion.cmake
+    VERSION ${PACKAGE_VERSION}
+    COMPATIBILITY AnyNewerVersion
+    )
+
+install(EXPORT ffgeTargets
+        FILE ffgeTargets.cmake
+        NAMESPACE ffge::
+        DESTINATION lib/cmake/ffge
+         )
+		 
+configure_file(ffgeConfig.cmake.in ffgeConfig.cmake @ONLY)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/ffgeConfig.cmake"
+              "${CMAKE_CURRENT_BINARY_DIR}/ffgeConfigVersion.cmake"
+        DESTINATION lib/cmake/ffge
+        )
+		
+export(TARGETS ffge NAMESPACE ffge:: FILE ffgeTargets.cmake)

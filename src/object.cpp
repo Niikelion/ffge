@@ -3,12 +3,12 @@
 
 namespace ffge
 {
-    std::weak_ptr<Transform> Transform::getParent() const
+    Transform* Transform::getParent()
     {
         return parent_;
     }
 
-    void Transform::setParent(const std::shared_ptr<Transform>& parent)
+    void Transform::setParent(Transform* parent)
     {
         parent_ = parent;
     }
@@ -28,10 +28,10 @@ namespace ffge
 
     glm::mat4 Transform::getMatrix() const
     {
-        if (auto ptr = parent_.lock())
-        {
-            return ptr->getMatrix() * getLocalMatrix();
-        }
+		if (parent_ != nullptr)
+		{
+			return parent_ -> getMatrix() * getLocalMatrix();
+		}
         return getLocalMatrix();
     }
 
@@ -92,8 +92,53 @@ namespace ffge
         rotation_ *= r;
     }
 
+	void Object::bareSetParent(const std::weak_ptr<Object>& parent)
+	{
+		this->parent = parent;
+		transforms.setParent(&parent.lock()->transforms);
+	}
 
-    /*void Object::draw(const glm::mat4& m, const glm::mat4& v, const glm::mat4& p) const
+	void Object::bareAppendChild(const std::shared_ptr<Object>& child)
+	{
+		children.emplace_back(child);
+	}
+
+	std::shared_ptr<Object> Object::getParent() const
+	{
+		return parent.lock();
+	}
+
+	void Object::setParent(const std::shared_ptr<Object>& parent)
+	{
+		if (parent == this->parent.lock())
+		{
+			bareSetParent(parent);
+			parent -> bareAppendChild(shared_from_this());
+		}
+	}
+
+	void Object::appendChild(const std::shared_ptr<Object>& child)
+	{
+		for (const auto& i : children)
+			if (child == i)
+				return;
+		child->bareSetParent(std::weak_ptr<Object>(shared_from_this()));
+		bareAppendChild(child);
+	}
+
+	void Object::removeChild(const std::shared_ptr<Object>& child)
+	{
+		for (auto it = children.begin(); it != children.end(); ++it)
+		{
+			if (*it == child)
+			{
+				children.erase(it);
+				return;
+			}
+		}
+	}
+
+	/*void Object::draw(const glm::mat4& m, const glm::mat4& v, const glm::mat4& p) const
     {
         if (!__flag && model != nullptr)
         {

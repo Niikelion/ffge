@@ -36,7 +36,8 @@ namespace ffge
         for (const auto& object : handles)
         {
             Object* pointer = std::get<0>(object)->second;
-            pointer->drawable->draw(pointer->transforms.getMatrix(),v,p);
+			if (pointer->drawable)
+	            pointer->drawable->draw(pointer->transforms.getMatrix(),v,p);
         }
     }
 
@@ -47,59 +48,6 @@ namespace ffge
             layer.draw(v,p);
         }
     }
-
-    /*void Scene::linkCamera(Camera& c)
-    {
-        camera.reset(&c,[](Camera*){});
-    }
-    void Scene::linkCamera(Camera* c)
-    {
-        camera.reset(c);
-    }
-    void Scene::linkCamera()
-    {
-        camera.reset();
-    }
-
-    void Scene::draw(UIRect winrect)
-    {
-        glm::mat4 proj_m(1) ,view_m(1);
-        viewbox.apply(winrect);
-        if (perspective)
-        {
-            proj_m = glm::perspective(fov,static_cast<float>(viewbox.view.width)/viewbox.view.height,0.1f,100.0f);
-        }
-        else
-        {
-            proj_m = glm::ortho(0.0f,static_cast<float>(viewbox.view.width),static_cast<float>(viewbox.view.height),0.0f);
-        }
-
-        if (camera)
-        {
-            view_m = camera.get() -> getMatrix();
-        }
-        else
-        {
-            //view_m = glm::mat4(1);
-        }
-        if (Program::current() != nullptr)
-        {
-            UniformBlock::shared.bind(Program::current());
-        }
-        UniformBlock::shared.subdata(0,4*4*sizeof(float),glm::value_ptr(proj_m));
-        UniformBlock::shared.subdata(4*4*sizeof(float),4*4*sizeof(float),glm::value_ptr(view_m));
-
-        for (auto &i:objects)
-        {
-            i.first->draw(view_m*i.second,glm::mat4(1));
-        }
-    }
-
-    Scene::Scene()
-    {
-        perspective = false;
-        fov = 45.0f;
-    }*/
 
     void Frame::draw(const UIRect& winrect)
     {

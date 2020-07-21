@@ -16,11 +16,10 @@ namespace ffge
         glm::quat rotation_;
         mutable bool dispersed_;
         mutable glm::mat4 transforms_;
-        std::weak_ptr<Transform> parent_;
-        std::vector<std::shared_ptr<Transform>> children;
+        Transform* parent_;
     public:
-        std::weak_ptr<Transform> getParent() const;
-        void setParent(const std::shared_ptr<Transform>& parent);
+        Transform* getParent();
+        void setParent(Transform* parent);
 
         glm::vec3 getPosition() const;
         glm::vec3 getScale() const;
@@ -45,11 +44,18 @@ namespace ffge
         Transform(Transform&&) noexcept = default;
     };
 
-    class Object
+    class Object: public std::enable_shared_from_this<Object>
     {
     private:
+		std::weak_ptr<Object> parent;
+		std::vector<std::shared_ptr<Object>> children;
+		void bareSetParent(const std::weak_ptr<Object>& parent);
+		void bareAppendChild(const std::shared_ptr<Object>& child);
     public:
-        std::weak_ptr<Object> getParent() const;
+        std::shared_ptr<Object> getParent() const;
+		void setParent(const std::shared_ptr<Object>& parent);
+		void appendChild(const std::shared_ptr<Object>& child);
+		void removeChild(const std::shared_ptr<Object>& child);
 
         Transform& transforms;
 
