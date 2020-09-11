@@ -5,6 +5,7 @@ project(ffge VERSION 2.0.0 DESCRIPTION "Graphics engine")
 find_package(glm REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(freetype CONFIG REQUIRED)
+find_package(freeimage REQUIRED)
 
 set(SOURCES
 	src/basics.cpp
@@ -52,7 +53,7 @@ target_include_directories(ffge PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>  
     	$<INSTALL_INTERFACE:./include>)
 target_include_directories(ffge PRIVATE include/ffge)
-target_link_libraries(ffge PUBLIC glm GLEW::GLEW freetype)
+target_link_libraries(ffge PUBLIC freeimage::FreeImage glm GLEW::GLEW freetype)
 
 add_library(ffge::ffge ALIAS ffge)
 
