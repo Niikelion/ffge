@@ -1,6 +1,6 @@
 #ifndef FFGE_H_INCLUDED
 #define FFGE_H_INCLUDED
 
-#include <ffge2/frame.hpp>
+#include <ffge/frame.hpp>
 
 #endif // FFGE_H_INCLUDED

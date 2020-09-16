@@ -31,6 +31,7 @@ namespace ffge
     struct Drawable   //abstract base for drawable objects
     {
         virtual void draw(const glm::mat4& m, const glm::mat4& v, const glm::mat4& p) const = 0;
+        virtual ~Drawable() = default;
     };
 
     struct Attributes

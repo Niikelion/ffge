@@ -1,6 +1,28 @@
 #include "object.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 
+glm::quat safeQuatLookAt(
+    glm::vec3 const& lookFrom,
+    glm::vec3 const& lookTo,
+    glm::vec3 const& up,
+    glm::vec3 const& alternativeUp)
+{
+    glm::vec3  direction = lookTo - lookFrom;
+    float      directionLength = glm::length(direction);
+
+    if (!(directionLength > 0.0001))
+        return glm::quat(1, 0, 0, 0);
+
+    direction /= directionLength;
+
+    if (glm::abs(glm::dot(direction, up)) > .9999f) {
+        return glm::quatLookAt(direction, alternativeUp);
+    }
+    else {
+        return glm::quatLookAt(direction, up);
+    }
+}
+
 namespace ffge
 {
     Transform* Transform::getParent()
@@ -88,8 +110,13 @@ namespace ffge
     void Transform::rotateAround(const glm::vec3& p,const glm::quat& r)
     {
         dispersed_ = true;
-        position_ = p + glm::mat3_cast(r)*(position_ - p);
+        position_ = p + glm::mat3_cast(-r)*(position_ - p);
         rotation_ *= r;
+    }
+
+    void Transform::lookAt(const glm::vec3& position, const glm::vec3& up, const glm::vec3& alternativeUp)
+    {
+        setRotation(safeQuatLookAt(getPosition(),position,up,alternativeUp));
     }
 
 	void Object::bareSetParent(const std::weak_ptr<Object>& parent)

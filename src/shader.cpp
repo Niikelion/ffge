@@ -66,7 +66,7 @@ namespace ffge
     {
         std::ifstream fp;
         fp.open(filename.c_str(), std::ios::in);
-        if(fp)
+        if(fp.is_open())
         {
             std::string line, buffer;
             while(getline(fp, line))
@@ -118,6 +118,11 @@ namespace ffge
             return;
         shaders.emplace_back(s,[](Shader*){/**/});
         glAttachShader(_program,s->getID());
+    }
+
+    void Program::detach(Shader* s)
+    {
+        glDetachShader(_program, s->getID());
     }
 
     #define type_mask(mac) std::make_pair(mac,#mac)

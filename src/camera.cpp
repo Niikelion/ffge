@@ -7,6 +7,22 @@
 namespace ffge
 {
     using namespace glm;
+
+
+    glm::mat4 Camera::getProjection(unsigned width, unsigned height) const
+    {
+        if (perspective)
+        {
+            return glm::perspective(fov, static_cast<float>(width) / height, near, far);
+        }
+        return glm::ortho(0.f,static_cast<float>(width),static_cast<float>(height),0.f);
+    }
+
+    glm::mat4 Camera::getView() const
+    {
+        return glm::inverse(transforms.getMatrix());
+    }
+
     /*void Camera::reset()
     {
         _m = std::move(mat4(1));

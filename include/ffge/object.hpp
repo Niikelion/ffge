@@ -28,18 +28,24 @@ namespace ffge
         glm::mat4 getMatrix() const;
         glm::mat4 getLocalMatrix() const;
 
-        void setPosition(const glm::vec3& p);
-        void setScale(const glm::vec3& s);
-        void setRotation(const glm::quat& r);
+        void setPosition(const glm::vec3& position);
+        void setScale(const glm::vec3& scale);
+        void setRotation(const glm::quat& rotation);
 
-        void translate(const glm::vec3& t);
-        void scale(const glm::vec3& s);
-        void rotate(const glm::quat& r);
+        void translate(const glm::vec3& translation);
+        void scale(const glm::vec3& scale);
+        void rotate(const glm::quat& rotation);
 
-        void scaleRelativeTo(const glm::vec3& p,const glm::vec3& s);
-        void rotateAround(const glm::vec3& p,const glm::quat& r);
+        void scaleRelativeTo(const glm::vec3& position,const glm::vec3& scale);
+        void rotateAround(const glm::vec3& position,const glm::quat& rotation);
 
-        Transform() : position_() ,scale_(1) ,rotation_() ,dispersed_(false) ,transforms_(1), parent_() {}
+        void lookAt(const glm::vec3& position, const glm::vec3& up, const glm::vec3& alternativeUp);
+        inline void lookAt(const glm::vec3& position, const glm::vec3& up)
+        {
+            lookAt(position, up, up);
+        }
+
+        Transform() : position_() ,scale_(1) ,rotation_(glm::identity<glm::quat>()) ,dispersed_(false) ,transforms_(1), parent_() {}
         Transform(const Transform&) = default;
         Transform(Transform&&) noexcept = default;
     };

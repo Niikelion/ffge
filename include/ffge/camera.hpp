@@ -7,15 +7,15 @@ namespace ffge
 {
     class Camera
     {
-    private:
-        bool perspective;
-        glm::mat4 projection;
     public:
         Transform transforms;
-        float pov;
+        float fov,near,far;
+        bool perspective;
 
-        glm::mat4 getProjection(unsigned width,unsigned height) const;
+        glm::mat4 getProjection(unsigned width, unsigned height) const;
         glm::mat4 getView() const;
+
+        Camera() : fov(35.f), near(0.1f), far(100.f), perspective(true) {}
     };
 
 
