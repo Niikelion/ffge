@@ -268,7 +268,7 @@ namespace ffge
             for (unsigned j = 0; j<static_cast<unsigned>(res); ++j)
             {
 
-                glGetActiveUniformName(_program,static_cast<unsigned>(j),bfs,&length,name2);
+                glGetActiveUniformName(_program,static_cast<unsigned>(vars[j]),bfs,&length,name2);
                 l.offsets[std::string(name2)] = offsets[j];
                 //std::cout << "  " << name2 << " : " << type_masks[types[j]] << " offset: " << offsets[j] << std::endl;
             }
