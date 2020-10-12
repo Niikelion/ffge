@@ -2,11 +2,13 @@
 
 namespace ffge
 {
-    void Material::use(const Program& p) const
+    void Material::use() const
     {
+        if (program != Program::current())
+            program->use();
         for (const auto& i:sources)
         {
-            i -> bind(p);
+            i -> bindUniform();
         }
     }
 }

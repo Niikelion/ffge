@@ -22,7 +22,6 @@ namespace ffge
             }
             if (abs(v - value) > 0.0000001f)
             {
-                
                 sorted.erase(iterator);
                 iterator = sorted.emplace(v,pointer);
                 value = v;
@@ -32,12 +31,16 @@ namespace ffge
 
     void Layer::draw(const glm::mat4& v,const glm::mat4& p) const
     {
+        glm::mat4 vp = p * v;
         update();
         for (const auto& object : handles)
         {
             Object* pointer = std::get<0>(object)->second;
-			if (pointer->drawable)
-	            pointer->drawable->draw(pointer->transforms.getMatrix(),v,p);
+            if (pointer->drawable)
+            {
+                Program::current()->getUniform("mvp") = vp * pointer->transforms.getMatrix();
+                pointer->drawable->draw(pointer->transforms.getMatrix(), v, p);
+            }
         }
     }
 
@@ -57,11 +60,6 @@ namespace ffge
             viewbox.apply(winrect);
             glm::mat4 p = camera->getProjection(viewbox.view.width,viewbox.view.height);
             glm::mat4 v = camera->getView();
-
-            glm::mat4 pv = p * v;
-
-            UniformBlock::shared.bind(Program::current());
-            UniformBlock::shared.set("projectionView",pv);
 
             scene->draw(v,p);
         }

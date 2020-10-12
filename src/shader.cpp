@@ -48,15 +48,16 @@ namespace ffge
         glGetShaderiv (shader, GL_COMPILE_STATUS, &status);
         if (status == GL_FALSE) {
             int infoLogLength;
+
             glGetShaderiv (shader, GL_INFO_LOG_LENGTH, &infoLogLength);
-            char *infoLog = new GLchar[infoLogLength];
-            glGetShaderInfoLog (shader, infoLogLength, NULL, infoLog);
-
-            //error log
-            //cerr<<"Compile log: "<<infoLog<<endl;
 
 
-            delete [] infoLog;
+            std::vector<char> infoLog(infoLogLength);
+            glGetShaderInfoLog (shader, infoLogLength, NULL, infoLog.data());
+
+            std::string err(infoLog.data());
+            
+            throw std::logic_error(err);
         }
         _sid = shader;
         _type = type;
@@ -78,8 +79,7 @@ namespace ffge
         }
         else
         {
-            //error
-            //cerr<<"Blad wczytywania shadera: "<<filename<<endl;
+            throw std::logic_error("Could not open file "+filename);
         }
     }
 
@@ -129,84 +129,6 @@ namespace ffge
 
     void Program::link()
     {
-        /*
-        std::map<unsigned,std::string>type_masks = {
-            type_mask(GL_FLOAT),
-            type_mask(GL_FLOAT_VEC2),
-            type_mask(GL_FLOAT_VEC3),
-            type_mask(GL_FLOAT_VEC4),
-            type_mask(GL_DOUBLE),
-            type_mask(GL_DOUBLE_VEC2),
-            type_mask(GL_DOUBLE_VEC3),
-            type_mask(GL_DOUBLE_VEC4),
-            type_mask(GL_INT),
-            type_mask(GL_INT_VEC2),
-            type_mask(GL_INT_VEC3),
-            type_mask(GL_INT_VEC4),
-            type_mask(GL_UNSIGNED_INT),
-            type_mask(GL_UNSIGNED_INT_VEC2),
-            type_mask(GL_UNSIGNED_INT_VEC3),
-            type_mask(GL_UNSIGNED_INT_VEC4),
-            type_mask(GL_BOOL),
-            type_mask(GL_BOOL_VEC2),
-            type_mask(GL_BOOL_VEC3),
-            type_mask(GL_BOOL_VEC4),
-            type_mask(GL_FLOAT_MAT2),
-            type_mask(GL_FLOAT_MAT3),
-            type_mask(GL_FLOAT_MAT4),
-            type_mask(GL_FLOAT_MAT2x3),
-            type_mask(GL_FLOAT_MAT2x4),
-            type_mask(GL_FLOAT_MAT3x2),
-            type_mask(GL_FLOAT_MAT3x4),
-            type_mask(GL_FLOAT_MAT4x2),
-            type_mask(GL_FLOAT_MAT4x3),
-            type_mask(GL_DOUBLE_MAT2),
-            type_mask(GL_DOUBLE_MAT3),
-            type_mask(GL_DOUBLE_MAT4),
-            type_mask(GL_DOUBLE_MAT2x3),
-            type_mask(GL_DOUBLE_MAT2x4),
-            type_mask(GL_DOUBLE_MAT3x2),
-            type_mask(GL_DOUBLE_MAT3x4),
-            type_mask(GL_DOUBLE_MAT4x2),
-            type_mask(GL_DOUBLE_MAT4x3),
-            type_mask(GL_SAMPLER_1D),
-            type_mask(GL_SAMPLER_2D),
-            type_mask(GL_SAMPLER_3D),
-            type_mask(GL_SAMPLER_CUBE),
-            type_mask(GL_SAMPLER_1D_SHADOW),
-            type_mask(GL_SAMPLER_2D_SHADOW),
-            type_mask(GL_SAMPLER_1D_ARRAY),
-            type_mask(GL_SAMPLER_2D_ARRAY),
-            type_mask(GL_SAMPLER_1D_ARRAY_SHADOW),
-            type_mask(GL_SAMPLER_2D_ARRAY_SHADOW),
-            type_mask(GL_SAMPLER_2D_MULTISAMPLE),
-            type_mask(GL_SAMPLER_2D_MULTISAMPLE_ARRAY),
-            type_mask(GL_SAMPLER_CUBE_SHADOW),
-            type_mask(GL_SAMPLER_BUFFER),
-            type_mask(GL_SAMPLER_2D_RECT),
-            type_mask(GL_SAMPLER_2D_RECT_SHADOW),
-            type_mask(GL_INT_SAMPLER_1D),
-            type_mask(GL_INT_SAMPLER_2D),
-            type_mask(GL_INT_SAMPLER_3D),
-            type_mask(GL_INT_SAMPLER_CUBE),
-            type_mask(GL_INT_SAMPLER_1D_ARRAY),
-            type_mask(GL_INT_SAMPLER_2D_ARRAY),
-            type_mask(GL_INT_SAMPLER_2D_MULTISAMPLE),
-            type_mask(GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY),
-            type_mask(GL_INT_SAMPLER_BUFFER),
-            type_mask(GL_INT_SAMPLER_2D_RECT),
-            type_mask(GL_UNSIGNED_INT_SAMPLER_1D),
-            type_mask(GL_UNSIGNED_INT_SAMPLER_2D),
-            type_mask(GL_UNSIGNED_INT_SAMPLER_3D),
-            type_mask(GL_UNSIGNED_INT_SAMPLER_CUBE),
-            type_mask(GL_UNSIGNED_INT_SAMPLER_1D_ARRAY),
-            type_mask(GL_UNSIGNED_INT_SAMPLER_2D_ARRAY),
-            type_mask(GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE),
-            type_mask(GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY),
-            type_mask(GL_UNSIGNED_INT_SAMPLER_BUFFER),
-            type_mask(GL_UNSIGNED_INT_SAMPLER_2D_RECT)
-        };
-        */
         int status;
         glLinkProgram (_program);
         glGetProgramiv (_program, GL_LINK_STATUS, &status);
@@ -242,15 +164,20 @@ namespace ffge
             glGetActiveUniform(_program,static_cast<unsigned>(i),bfs,&length,&size,&type,name);
             int ii = glGetUniformLocation(_program,name);
             if (ii >= 0)
-                _uniformLocationList[std::string(name)] = ii;
+                _uniformLocationList[std::string(name)] = Uniform(ii);
         }
         glGetProgramiv(_program,GL_ACTIVE_UNIFORM_BLOCKS,&count);
         for (int i=0; i<count; ++i)
         {
-            UniformLayout l;
-            glGetActiveUniformBlockName(_program,static_cast<unsigned>(i),bfs,&length,name);
-            l.id = glGetUniformBlockIndex(_program,const_cast<const char*>(name));
-
+            glGetActiveUniformBlockName(_program, static_cast<unsigned>(i), bfs, &length, name);
+            int id = glGetUniformBlockIndex(_program, const_cast<const char*>(name));
+            int size = 0;
+            glGetActiveUniformBlockiv(_program, id, GL_UNIFORM_BLOCK_DATA_SIZE, &size);
+            UniformBlock::Layout l(
+                _program,
+                id,
+                size
+            );
             int res;
             glGetActiveUniformBlockiv(_program,l.id,GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS,&res);
 
@@ -262,17 +189,14 @@ namespace ffge
 
             std::vector<int>offsets;
             offsets.resize(res);
-            //int types[res];
-            //glGetActiveUniformsiv(_program,res,reinterpret_cast<unsigned*>(vars),GL_UNIFORM_TYPE,types);
             glGetActiveUniformsiv(_program,res,reinterpret_cast<unsigned*>(vars.data()),GL_UNIFORM_OFFSET,offsets.data());
             for (unsigned j = 0; j<static_cast<unsigned>(res); ++j)
             {
 
                 glGetActiveUniformName(_program,static_cast<unsigned>(vars[j]),bfs,&length,name2);
                 l.offsets[std::string(name2)] = offsets[j];
-                //std::cout << "  " << name2 << " : " << type_masks[types[j]] << " offset: " << offsets[j] << std::endl;
             }
-            _uniformblockList[std::string(name)] = l;
+            _uniformblockList[std::string(name)] = std::make_shared<UniformBlock::Layout>(l);
         }
     }
 
@@ -312,12 +236,12 @@ namespace ffge
         return _current;
     }
 
-    int Program::getUniform(const std::string& uniform) const
+    Uniform Program::getUniform(const std::string& uniform) const
     {
         auto it = _uniformLocationList.find(uniform);
         if (it != _uniformLocationList.end())
             return it -> second;
-        return -1;
+        return Uniform();
     }
     int Program::getAttribute(const std::string& attribute) const
     {
@@ -326,20 +250,13 @@ namespace ffge
             return it -> second;
         return -1;
     }
-    int Program::getUniformBlock(const std::string& c) const
-    {
-        auto it = _uniformblockList.find(c);
-        if (it != _uniformblockList.end())
-            return it -> second.id;
-        return -1;
-    }
 
-    Program::UniformLayout Program::getUniformBlockLayout(const std::string& block) const
+    std::shared_ptr<UniformBlock::Layout> Program::getUniformBlockLayout(const std::string& block) const
     {
         auto it = _uniformblockList.find(block);
         if (it != _uniformblockList.end())
             return it -> second;
-        return UniformLayout();
+        return std::shared_ptr<UniformBlock::Layout>();
     }
 
     Program::Program()

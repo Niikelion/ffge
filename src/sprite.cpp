@@ -6,7 +6,6 @@ namespace ffge
 {
     void Sprite::draw(const glm::mat4& m, const glm::mat4& v, const glm::mat4& p) const
     {
-        UniformBlock::shared.set("model",m);
         if (texture)
             texture->bind();
         vao.bind();

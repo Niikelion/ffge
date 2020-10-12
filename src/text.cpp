@@ -56,22 +56,25 @@ namespace ffge
     {
         if (size && access != nullptr)
         {
-            UniformBlock::shared.set("model",m);
             access -> bindTexture();
             access -> bindBuffer();
-            for (const auto& i: offsets)
+
+            if (Program::current() != nullptr)
             {
-                if (Program::current() != nullptr)
+                Program* c = Program::current();
+
+                Uniform offset = c->getUniform("offset"),
+                    fontWidth = c->getUniform("fontWidth"),
+                    fontHeight = c->getUniform("fontHeight");
+
+                for (const auto& i : offsets)
                 {
-                    Program* c = Program::current();
-                    if (c -> getUniform("offset") >= 0)
-                    {
-                        glUniform1ui(glGetUniformLocation(c->getID(),"offset"),i.first);
-                        glUniform1ui(Program::current()->getUniform("fontWidth"),access->getWidth());
-                        glUniform1ui(Program::current()->getUniform("fontHeight"),access->getHeight());
-                    }
+                    offset = i.first;
+                    fontWidth = access->getWidth();
+                    fontHeight = access->getHeight();
+
+                    glDrawElementsBaseVertex(GL_TRIANGLE_STRIP, 4, dataTypes::Uint, (void*)0, i.second * 4);
                 }
-                glDrawElementsBaseVertex(GL_TRIANGLE_STRIP,4,dataTypes::Uint,(void*)0,i.second*4);
             }
         }
     }

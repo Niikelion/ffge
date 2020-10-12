@@ -1,23 +1,22 @@
 #ifndef UNIFORMS_H
 #define UNIFORMS_H
 
+#include <ffge/ff_glew.hpp>
 #include <ffge/buffer.hpp>
-#include <ffge/shader.hpp>
 #include <string>
 #include <glm/gtc/type_ptr.hpp>
 #include <vector>
+#include <map>
+#include <memory>
 
 namespace ffge
 {
     class Uniform
     {
-    protected:
-        Uniform(unsigned p,const std::string& name);
-        unsigned _p;
     public:
-        std::string name;
-        unsigned slot;
 
+        Uniform& operator = (int a);
+        Uniform& operator = (unsigned int a);
         Uniform& operator = (float);
         Uniform& operator = (const std::initializer_list<float>&);
         Uniform& operator = (const std::vector<float>&);
@@ -45,49 +44,87 @@ namespace ffge
 
         unsigned getSlotByName(unsigned p,const std::string& a) const;
 
-        Uniform();
-        Uniform(unsigned p);
+        inline bool isValid() const
+        {
+            return slot >= 0;
+        }
+
+        Uniform& operator = (const Uniform&) = default;
+
+        Uniform() : slot(-1) {}
+
+        Uniform(unsigned slot);
 
         Uniform(const Uniform&) = default;
-        Uniform(Uniform&&) noexcept = default;
+    private:
+        int slot;
     };
 
     class UniformBlock: public DataBuffer
     {
-    protected:
-        unsigned _binding;
-        std::map<std::string,unsigned> offsets;
     public:
-        static UniformBlock shared;
+        //TODO: store in shared ptr and store binded slot
+        struct Layout
+        {
+            unsigned id;
+            size_t size;
+            std::map<std::string, unsigned> offsets;
 
-        unsigned slot;
-        std::string name;
+            inline int getProgramId() const
+            {
+                return program;
+            }
 
-        static void bind(unsigned p,unsigned i,unsigned slot);
-        static void bind(const Program& p, const std::string& name, unsigned slot);
-        void bind(const Program& p);
-        void bind(Program* p);
+            inline void bindToSlot(unsigned slot)
+            {
+                this->slot = slot;
+                glUniformBlockBinding(program, id, slot);
+            }
 
-        void loadFromProgram(const Program& p);
-        void layout(const std::vector<std::pair<std::string,unsigned>>& _offsets);
+            inline int getSlot()
+            {
+                return slot;
+            }
 
-        void sync();
+            Layout& operator = (const Layout&) = default;
+
+            Layout() : id(0), size(0), program(0), slot(-1) {}
+            Layout(int p, int i, size_t siz, int s = 0) : id(i), size(siz), program(p), slot(s)
+            {
+                if (slot >= 0)
+                {
+                    bindToSlot(s);
+                }
+            }
+        private:
+            int program;
+            int slot;
+        };
+
+        void loadLayout(const std::shared_ptr<Layout>& layout);
+        std::shared_ptr<Layout> getLayout() const;
+
+        void bindUniform();
 
         void set(const std::string& name,unsigned size,void* var);
-        template<typename T>inline void set(const std::string& name,T& var)
+        template<typename T>inline void set(const std::string& name,const T& var)
         {
             set(name,sizeof(T),const_cast<void*>(reinterpret_cast<const void*>(&var)));
         }
 
-        static void init();
-
         UniformBlock();
-        UniformBlock(unsigned sl,const std::string& n);
-        UniformBlock(unsigned sl,const std::string& n,bool);
+        UniformBlock(const std::shared_ptr<Layout>& l) : UniformBlock()
+        {
+            layout = l;
+        }
+
         UniformBlock(const UniformBlock&) = delete;
         UniformBlock(UniformBlock&&) noexcept = default;
 
         ~UniformBlock();
+
+    protected:
+        std::shared_ptr<Layout> layout;
     };
 }
 

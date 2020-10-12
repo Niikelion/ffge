@@ -94,6 +94,8 @@ namespace ffge
 
     typedef Rect<float>             FRect;
     typedef Rect<double>            DRect;
+
+    void init();
 }
 
 #endif // BASICS_H

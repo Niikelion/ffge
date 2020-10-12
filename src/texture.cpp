@@ -3,6 +3,7 @@
 #include <climits>
 #include <cmath>
 #include <freeimage.h>
+#include <iostream>
 
 namespace ffge
 {
@@ -34,8 +35,8 @@ namespace ffge
 
             if (bitmap)
             {
-                int w = FreeImage_GetWidth(bitmap);
-                int h = FreeImage_GetHeight(bitmap);
+                size_t w = FreeImage_GetWidth(bitmap);
+                size_t h = FreeImage_GetHeight(bitmap);
                 int bpp = FreeImage_GetBPP(bitmap);
                 FREE_IMAGE_TYPE imageType = FreeImage_GetImageType(bitmap);
 
@@ -130,7 +131,7 @@ namespace ffge
                     }
                     }
 
-                    int scanWidth = w * bpp;
+                    size_t scanWidth = w * bpp / 8;
 
                     bytes.resize(h * scanWidth);
 
@@ -280,7 +281,7 @@ namespace ffge
         {
             std::vector<BYTE> bytes;
             auto res = LoadBitmap2DToBuffer(bitmap,bytes);
-            createFromPixels(std::get<3>(res), std::get<0>(res), std::get<1>(res), std::get<2>(res), bytes.data());
+            createFromPixels(std::get<3>(res), std::get<0>(res), std::get<1>(res), std::get<2>(res), bytes.data(), Texture2D::formats::rgba);
         }
     }
     void Texture2D::updateSubRegionFromFile(const std::string& name,unsigned x,unsigned y)

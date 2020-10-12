@@ -7,6 +7,7 @@
 #include <string>
 #include <memory>
 #include <algorithm>
+#include <ffge/uniform.hpp>
 
 namespace ffge
 {
@@ -42,19 +43,12 @@ namespace ffge
 
     class Program
     {
-    public:
-        struct UniformLayout
-        {
-            unsigned id;
-            std::map<std::string,unsigned> offsets;
-            UniformLayout(): id(0) {}
-        };
     protected:
         unsigned _program;
         std::vector<std::shared_ptr<Shader> > shaders;
         std::map<std::string,unsigned> _attributeList;
-        std::map<std::string,unsigned> _uniformLocationList;
-        std::map<std::string,UniformLayout> _uniformblockList;
+        std::map<std::string,Uniform> _uniformLocationList;
+        std::map<std::string,std::shared_ptr<UniformBlock::Layout>> _uniformblockList;
 
         static Program* _current;
 
@@ -76,10 +70,9 @@ namespace ffge
 
         unsigned getID() const noexcept;
 
-        int getUniform(const std::string& uniform) const;
+        Uniform getUniform(const std::string& uniform) const;
         int getAttribute(const std::string& attribute) const;
-        int getUniformBlock(const std::string& block) const;
-        UniformLayout getUniformBlockLayout(const std::string& block) const;
+        std::shared_ptr<UniformBlock::Layout> getUniformBlockLayout(const std::string& block) const;
 
         Program();
     };

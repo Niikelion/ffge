@@ -2,6 +2,7 @@
 #define MATERIAL_H
 
 #include <ffge/uniform.hpp>
+#include <ffge/shader.hpp>
 #include <ffge/texture.hpp>
 #include <memory>
 #include <vector>
@@ -13,7 +14,8 @@ namespace ffge
     public:
         std::vector<std::shared_ptr<UniformBlock>> sources;
         std::vector<std::shared_ptr<Texture2D>> textures;
-        virtual void use(const Program& p) const;
+        Program* program;
+        virtual void use() const;
     };
 }
 
